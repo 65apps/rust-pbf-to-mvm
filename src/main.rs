@@ -6,9 +6,12 @@ use std::fs::File;
 use std::io::{BufWriter, BufReader};
 use std::io::prelude::*;
 
+
+
 #[derive(Debug)]
 struct Mvm {
-    source: &'static str
+    source: &'static str,
+    file: 
 }
 
 trait Genetare {
@@ -16,7 +19,7 @@ trait Genetare {
 }
 
 impl Genetare for Mvm {
-	fn get_source(&self) {
+	fn get_source(&mut self) {
 		let client = Client::new();	
 		let mut responce = client.get(self.source).send().unwrap();
 		
@@ -33,26 +36,28 @@ impl Genetare for Mvm {
 	    	};
 		}
 
-    	let mut download: u64 = 0;
+		let vec: Vec<&str> = self.source.split('/').collect();
+		self.file = vec[vec.len()-1];		
 
-		let mut file = File::create("temp.pbf").unwrap();
-	    let mut buffer_write = BufWriter::new(file);
-	    let mut buffer_read = BufReader::new(responce);
+    // 	let mut file = File::create("temp.pbf").unwrap();
+	   //  let mut buffer_write = BufWriter::new(file);
+	   //  let mut buffer_read = BufReader::new(responce);
+	   //  let mut download: u64 = 0;   	    	
 
-	    while  download != size {
-	    	let length = {	
-	    		let buffer = buffer_read.fill_buf().unwrap();	
+	   //  while  download != size {
+	   //  	let length = {	
+	   //  		let buffer = buffer_read.fill_buf().unwrap();	
 	    		
-	    		buffer_write.write(buffer).unwrap();
-				buffer_write.flush().unwrap();
+	   //  		buffer_write.write(buffer).unwrap();
+				// buffer_write.flush().unwrap();
 
-				buffer.len()
-	    	};
+				// buffer.len()
+	   //  	};
 
-	    	buffer_read.consume(length);
-	    	println!("{:?}", length);
-	    	download += length as u64;
-	    }
+	   //  	buffer_read.consume(length);
+	   //  	println!("{:?}", length);
+	   //  	download += length as u64;
+	   //  }
 	}
 }
 
