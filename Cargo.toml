@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Andrey Ivanov <lekkion@gmail.com>"]
 
 [dependencies]
-hyper = "*"
+hyper = "0.8"

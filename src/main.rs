@@ -1,55 +1,66 @@
 extern crate hyper;
 
 use hyper::client::Client;
+use hyper::header::parsing::*;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{BufWriter, BufReader};
+use std::io::prelude::*;
 
 #[derive(Debug)]
-struct Mvm<'a> {
-    source: &'a str
+struct Mvm {
+    source: &'static str
 }
 
-impl<'a> Mvm<'a> {
+trait Genetare {
+	fn get_source(&self);
+}
+
+impl Genetare for Mvm {
 	fn get_source(&self) {
 		let client = Client::new();	
-		let mut res = client.get(self.source).send().unwrap();
+		let mut responce = client.get(self.source).send().unwrap();
 		
-		assert_eq!(hyper::Ok, res.status);
+		assert_eq!(hyper::Ok, responce.status);
 
-		let mut file = match File::create("temp.pbf") {
-	        Err(_) => panic!("couldn't create"),
-	        Ok(file) => file,
-	    };
+		let size: u64;
 
-		let length = res.headers.get_raw("content-length");
-	    println!("{:?}", length); 
+		{
+			let length: &[Vec<u8>] = responce.headers.get_raw("content-length").unwrap();
 
-	    // loop {
-	    //     let mut buffer = [0; 1024];
-	    // 	res.read(&mut buffer).unwrap();
-	    // 	file.write(&buffer).unwrap();	    	
-	    // }
+		 	size = match from_one_raw_str(&length) {
+	    		Err(_) => panic!("cannot read header"),
+	    		Ok(size) => size,
+	    	};
+		}
 
-		
-		// for byte in res.bytes() {
-		// 	let chunk = match byte {
-		// 		Err(_) => panic!("error read"),
-		// 		Ok(data) => data,
-		// 	};
+    	let mut download: u64 = 0;
 
-		// 	match file.write(&chunk) {
-		// 		Err(_) => panic!("error write"),
-		// 		Ok(size) => println!("write {} bytes", size),
-		// 	}
-		// }
+		let mut file = File::create("temp.pbf").unwrap();
+	    let mut buffer_write = BufWriter::new(file);
+	    let mut buffer_read = BufReader::new(responce);
+
+	    while  download != size {
+	    	let length = {	
+	    		let buffer = buffer_read.fill_buf().unwrap();	
+	    		
+	    		buffer_write.write(buffer).unwrap();
+				buffer_write.flush().unwrap();
+
+				buffer.len()
+	    	};
+
+	    	buffer_read.consume(length);
+	    	println!("{:?}", length);
+	    	download += length as u64;
+	    }
 	}
 }
 
-static CENTRAL: &'static str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
+static CRIMEAN: &'static str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
 
 fn main() {    
     let central = Mvm {
-    	source: CENTRAL
+    	source: CRIMEAN
     };
 
     central.get_source();
