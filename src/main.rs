@@ -20,6 +20,8 @@ struct Mvm {
 trait Genetare {
 	fn get_source(&mut self);
 
+	fn convert(&self);
+
 	fn console(&self);
 }
 
@@ -63,6 +65,10 @@ impl Genetare for Mvm {
 	    	println!("{:?}", length);
 	    	download += length as u64;
 	    }
+	}
+
+	fn convert(&self) {
+		
 	}
 
 	fn console(&self) {
