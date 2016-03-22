@@ -5,12 +5,12 @@ use hyper::header::parsing::*;
 use std::fs::File;
 use std::io::{BufWriter, BufReader};
 use std::io::prelude::*;
+use std::process::Command;
 
 enum Src {
     None,
     Path(&'static str),
 }
-
 
 struct Mvm {
     source: &'static str,
@@ -44,9 +44,11 @@ impl Genetare for Mvm {
 		}
 
 		let vec: Vec<&str> = self.source.split('/').collect();
-		self.file = Src::Path(vec[vec.len()-1]);		
+		let name: &str = vec[vec.len()-1];
 
-    	let mut file = File::create(vec[vec.len()-1]).unwrap();
+		self.file = Src::Path(name);		
+
+    	let mut file = File::create(name).unwrap();
 	    let mut buffer_write = BufWriter::new(file);
 	    let mut buffer_read = BufReader::new(responce);
 	    let mut download: u64 = 0;   	    	
@@ -68,7 +70,19 @@ impl Genetare for Mvm {
 	}
 
 	fn convert(&self) {
+		let file = match self.file {
+			Src::None => panic!("no file found"),
+			Src::Path(file) => file,
+		};
+
 		
+		let output = Command::new("/home/andrey/project/omim/tools/unix/generate_mwm.sh")
+							.arg(file)
+							.output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+
+		println!("status: {}", output.status);
+		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 	}
 
 	fn console(&self) {
@@ -88,6 +102,5 @@ fn main() {
     };
 
     central.get_source();
-
-    central.console(); 
+    central.convert(); 
 }
