@@ -6,6 +6,8 @@ use std::fs::File;
 use std::io::{BufWriter, BufReader};
 use std::io::prelude::*;
 use std::process::Command;
+use std::env;
+use std::env::VarError;
 
 enum Src {
     None,
@@ -21,6 +23,8 @@ trait Genetare {
 	fn get_source(&mut self);
 
 	fn convert(&self);
+
+	fn read_env(&self) -> String;
 }
 
 impl Genetare for Mvm {
@@ -73,14 +77,22 @@ impl Genetare for Mvm {
 			Src::Path(file) => file,
 		};
 
-		
-		let output = Command::new("/home/andrey/project/omim/tools/unix/generate_mwm.sh")
+		let path = self.read_env();		
+		let output = Command::new(path)
 							.arg(file)
 							.output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", output.status);
 		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+	}
+
+	fn read_env(&self) -> String {
+		static OMIM: &'static str = "OMIM_DIR";
+		match env::var(OMIM) {
+			Err(e) => panic!("error read env {:?}", e),
+		    Ok(val) => val,		    
+		}
 	}
 }
 
