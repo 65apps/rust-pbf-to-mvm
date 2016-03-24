@@ -4,6 +4,7 @@ MAINTAINER Andrey Ivanov stayhardordie@gmail.com
 ENV RUST_VERSION=1.7.0
 ENV REPOSITORY=https://github.com/mapsme/omim.git
 ENV DIR=/srv
+ENV OMIM_DIR=/srv/omim/tools/unix/generate_mwm.sh
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -51,4 +52,8 @@ RUN cd omim && \
     echo | ./configure.sh
 WORKDIR $DIR
 RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+RUN git clone git@github.com:stalehard/rust-pbf-to-mvm.git && \
+    tar -xzf rust-pbf-to-mvm.tar.gz && \
+    cd rust-pbf-to-mvm && \
+    cargo build
 CMD ["/bin/bash"]
