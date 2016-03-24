@@ -21,8 +21,6 @@ trait Genetare {
 	fn get_source(&mut self);
 
 	fn convert(&self);
-
-	fn console(&self);
 }
 
 impl Genetare for Mvm {
@@ -83,13 +81,6 @@ impl Genetare for Mvm {
 		println!("status: {}", output.status);
 		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
-	}
-
-	fn console(&self) {
-		match self.file {
-		    Src::Path(src) => println!("{:?}", src),
-		    Src::None => println!("None"),
-		}
 	}
 }
 
