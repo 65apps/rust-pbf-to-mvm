@@ -7,27 +7,31 @@ use std::io::{BufWriter, BufReader};
 use std::io::prelude::*;
 use std::process::Command;
 use std::env;
-use std::env::VarError;
 
-enum Src {
+enum Src<'a> {
     None,
-    Path(&'static str),
+    Path(&'a str),
 }
 
-struct Mvm {
-    source: &'static str,
-    file: Src
+struct Mvm<'a> {
+    source: &'a str,
+    file: Src<'a>
 }
 
-trait Genetare {
+trait Genetare<'a> {
 	fn get_source(&mut self);
 
 	fn convert(&self);
 
-	fn read_env(&self) -> String;
+	fn read_env(&self) -> Target;
 }
 
-impl Genetare for Mvm {
+struct Target {
+	omim: String,
+	files: String
+}
+
+impl<'a> Genetare<'a> for Mvm<'a> {
 	fn get_source(&mut self) {
 		let client = Client::new();	
 		let mut responce = client.get(self.source).send().unwrap();
@@ -45,8 +49,10 @@ impl Genetare for Mvm {
 	    	};
 		}
 
+
 		let vec: Vec<&str> = self.source.split('/').collect();
 		let name: &str = vec[vec.len()-1];
+		
 
 		self.file = Src::Path(name);		
 
@@ -77,33 +83,43 @@ impl Genetare for Mvm {
 			Src::Path(file) => file,
 		};
 
-		let path = self.read_env();		
-		let output = Command::new(path)
-							.arg(file)
-							.output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+		let env = self.read_env();				
+		let output = Command::new(env.omim).arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", output.status);
 		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 	}
 
-	fn read_env(&self) -> String {
+	fn read_env(&self) -> Target {
 		static OMIM: &'static str = "OMIM_DIR";
-		match env::var(OMIM) {
+		static FILES: &'static str = "FILES_DIR";
+
+		let omim = match env::var(OMIM) {
 			Err(e) => panic!("error read env {:?}", e),
 		    Ok(val) => val,		    
+		};
+
+		let files = match env::var(FILES) {
+			Err(e) => panic!("error read env {:?}", e),
+		    Ok(val) => val,		    
+		};
+
+		Target {
+			omim: omim,
+			files: files
 		}
 	}
 }
 
-static CRIMEAN: &'static str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
-
 fn main() {    
+	let crimean: &str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
+
     let mut central = Mvm {
-    	source: CRIMEAN,
+    	source: crimean,
     	file: Src::None
     };
 
     central.get_source();
-    central.convert(); 
+    // central.convert(); 
 }
