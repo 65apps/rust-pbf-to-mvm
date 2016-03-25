@@ -21,7 +21,7 @@ struct Mvm<'a> {
 trait Genetare<'a> {
 	fn get_source(&mut self);
 
-	fn convert(&self);
+	fn convert_mvm(&self);
 
 	fn read_env(&self) -> Target;
 }
@@ -51,8 +51,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 
 
 		let vec: Vec<&str> = self.source.split('/').collect();
-		let name: &str = vec[vec.len()-1];
-		
+		let name: &str = vec[vec.len()-1];	
 
 		self.file = Src::Path(name);		
 
@@ -77,14 +76,16 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 	    }
 	}
 
-	fn convert(&self) {
+	fn convert_mvm(&self) {
 		let file = match self.file {
 			Src::None => panic!("no file found"),
 			Src::Path(file) => file,
 		};
 
 		let env = self.read_env();				
-		let output = Command::new(env.omim).arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+		let output = Command::new(env.omim)
+							.env("TARGET", env.files)
+							.arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", output.status);
 		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
@@ -92,8 +93,8 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 	}
 
 	fn read_env(&self) -> Target {
-		static OMIM: &'static str = "OMIM_DIR";
-		static FILES: &'static str = "FILES_DIR";
+		let OMIM: &str = "OMIM_DIR";
+		let FILES: &str = "FILES_DIR";
 
 		let omim = match env::var(OMIM) {
 			Err(e) => panic!("error read env {:?}", e),
@@ -121,5 +122,5 @@ fn main() {
     };
 
     central.get_source();
-    // central.convert(); 
+    central.convert_mvm(); 
 }
