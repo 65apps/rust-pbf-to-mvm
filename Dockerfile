@@ -4,9 +4,11 @@ MAINTAINER Andrey Ivanov stayhardordie@gmail.com
 ENV RUST_VERSION=1.7.0
 ENV REPOSITORY=https://github.com/mapsme/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/stalehard/rust-pbf-to-mvm.git
+ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
 ENV OMIM_DIR=/srv/omim/tools/unix/generate_mwm.sh
 ENV FILES_DIR=/mnt/files/
+ENV GRAPH_DIR=/srv/graphhopper/graphhopper.sh
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -54,6 +56,28 @@ RUN cd omim && \
     echo | ./configure.sh
 WORKDIR $DIR
 RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+RUN \
+    echo "===> add webupd8 repository..."  && \
+    echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  && \
+    echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list  && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886  && \
+    apt-get update  && \
+    \
+    \
+    echo "===> install Java"  && \
+    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections  && \
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections  && \
+    DEBIAN_FRONTEND=noninteractive  apt-get install -y --force-yes oracle-java8-installer oracle-java8-set-default  && \
+    \
+    \
+    echo "===> clean up..."  && \
+    rm -rf /var/cache/oracle-jdk8-installer  && \
+    apt-get clean  && \
+    rm -rf /var/lib/apt/lists/*
+RUN git clone $REPOSITORY_GRAPH && \
+    cd graphhopper && \
+    git checkout 0.5 
+WORKDIR $DIR
 RUN git clone $REPOSITORY_GENERATOR && \    
     cd rust-pbf-to-mvm && \
     cargo build

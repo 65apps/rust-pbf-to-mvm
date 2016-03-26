@@ -32,11 +32,12 @@ struct Target {
 }
 
 impl<'a> Genetare<'a> for Mvm<'a> {
+
 	fn get_source(&mut self) {
 		let client = Client::new();	
-		let mut responce = client.get(self.source).send().unwrap();
+		let responce = client.get(self.source).send().unwrap();
 		
-		assert_eq!(hyper::Ok, responce.status);
+		assert_eq!(hyper::Ok, responce.status);		
 
 		let size: u64;
 
@@ -55,7 +56,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 
 		self.file = Src::Path(name);		
 
-    	let mut file = File::create(name).unwrap();
+    	let file = File::create(name).unwrap();
 	    let mut buffer_write = BufWriter::new(file);
 	    let mut buffer_read = BufReader::new(responce);
 	    let mut download: u64 = 0;   	    	
@@ -90,19 +91,20 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		println!("status: {}", output.status);
 		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+
 	}
 
 	fn read_env(&self) -> Target {
-		let OMIM: &str = "OMIM_DIR";
-		let FILES: &str = "FILES_DIR";
+		let omim_var: &str = "OMIM_DIR";
+		let files_var: &str = "FILES_DIR";
 
-		let omim = match env::var(OMIM) {
-			Err(e) => panic!("error read env {:?}", e),
+		let omim = match env::var(omim_var) {
+			Err(_) => panic!("error read env OMIM_DIR"),
 		    Ok(val) => val,		    
 		};
 
-		let files = match env::var(FILES) {
-			Err(e) => panic!("error read env {:?}", e),
+		let files = match env::var(files_var) {
+			Err(_) => panic!("error read env FILES_DIR"),
 		    Ok(val) => val,		    
 		};
 
@@ -123,4 +125,5 @@ fn main() {
 
     central.get_source();
     central.convert_mvm(); 
+
 }
