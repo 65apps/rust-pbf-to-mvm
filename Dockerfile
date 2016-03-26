@@ -8,7 +8,7 @@ ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
 ENV OMIM_DIR=/srv/omim/tools/unix/generate_mwm.sh
 ENV FILES_DIR=/mnt/files/
-ENV GRAPH_DIR=/srv/graphhopper/graphhopper.sh
+ENV GRAPH_DIR=/srv/graphhopper/
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -80,5 +80,6 @@ RUN git clone $REPOSITORY_GRAPH && \
 WORKDIR $DIR
 RUN git clone $REPOSITORY_GENERATOR && \    
     cd rust-pbf-to-mvm && \
-    cargo build
+    cargo build && \
+    mv ./config.properties ../graphhopper/config.properties
 CMD ["/bin/bash"]
