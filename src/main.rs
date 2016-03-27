@@ -21,14 +21,15 @@ struct Mvm<'a> {
 trait Genetare<'a> {
 	fn get_source(&mut self);
 
-	fn convert_mvm(&self);
+	fn convert_mvm_and_graph(&self);
 
 	fn read_env(&self) -> Target;
 }
 
 struct Target {
 	omim: String,
-	files: String
+	files: String,
+	graph: String
 }
 
 impl<'a> Genetare<'a> for Mvm<'a> {
@@ -77,26 +78,34 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 	    }
 	}
 
-	fn convert_mvm(&self) {
+	fn convert_mvm_and_graph(&self) {
 		let file = match self.file {
 			Src::None => panic!("no file found"),
 			Src::Path(file) => file,
 		};
 
-		let env = self.read_env();				
-		let output = Command::new(env.omim)
+		let env = self.read_env();						
+		let mvm_proc = Command::new(env.omim)
 							.env("TARGET", env.files)
 							.arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
-		println!("status: {}", output.status);
-		println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-		println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+		println!("status: {}", mvm_proc.status);
+		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&mvm_proc.stderr));
 
+		let graph_proc = Command::new("./graphhopper.sh")
+							.current_dir(env.graph)							
+							.arg("import").arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+
+		println!("status: {}", graph_proc.status);
+		println!("stdout: {}", String::from_utf8_lossy(&graph_proc.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&graph_proc.stderr));
 	}
 
 	fn read_env(&self) -> Target {
 		let omim_var: &str = "OMIM_DIR";
 		let files_var: &str = "FILES_DIR";
+		let graph_var: &str = "GRAPH_DIR";
 
 		let omim = match env::var(omim_var) {
 			Err(_) => panic!("error read env OMIM_DIR"),
@@ -108,9 +117,15 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		    Ok(val) => val,		    
 		};
 
+		let graph = match env::var(graph_var) {
+		    Err(_) => panic!("error read env GRAPH_DIR"),
+		    Ok(val) => val,
+		};
+
 		Target {
 			omim: omim,
-			files: files
+			files: files,
+			graph: graph
 		}
 	}
 }
@@ -124,6 +139,6 @@ fn main() {
     };
 
     central.get_source();
-    central.convert_mvm(); 
+    central.convert_mvm_and_graph(); 
 
 }
