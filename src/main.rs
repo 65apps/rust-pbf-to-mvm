@@ -38,7 +38,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		let client = Client::new();	
 		let responce = client.get(self.source).send().unwrap();
 		
-		assert_eq!(hyper::Ok, responce.status);		
+		// assert_eq!(hyper::Ok, responce.status);		
 
 		let size: u64;
 
@@ -93,9 +93,12 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&mvm_proc.stderr));
 
+
+		let mut dir = env::current_dir().unwrap();
+		dir.push(file);		
 		let graph_proc = Command::new("./graphhopper.sh")
 							.current_dir(env.graph)							
-							.arg("import").arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.arg("import").arg(dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", graph_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&graph_proc.stdout));
