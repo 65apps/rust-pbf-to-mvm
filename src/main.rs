@@ -152,9 +152,15 @@ fn main() {
 	let crimean: &str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
 	let caucasus: &str = "http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf";
 	let central: &str = "http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf";
+	let fareastern: &str = "http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf";
+	let northwestern: &str = "http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf";
+	let siberian: &str = "http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf";
+	let south: &str = "http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf";
+	let ural: &str = "http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf";
+	let volga: &str = "http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf";
 
     let mut district = Mvm {
-    	source: crimean,
+    	source: volga,
     	file: Src::None
     };
 
