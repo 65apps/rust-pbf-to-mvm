@@ -7,6 +7,7 @@ use std::io::{BufWriter, BufReader};
 use std::io::prelude::*;
 use std::process::Command;
 use std::env;
+use std::str;
 
 enum Src<'a> {
     None,
@@ -38,7 +39,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		let client = Client::new();	
 		let responce = client.get(self.source).send().unwrap();
 		
-		// assert_eq!(hyper::Ok, responce.status);		
+		assert_eq!(hyper::Ok, responce.status);		
 
 		let size: u64;
 
@@ -86,7 +87,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 
 		let env = self.read_env();						
 		let mvm_proc = Command::new(env.omim)
-							.env("TARGET", env.files)
+							.env("TARGET", &env.files)
 							.arg(file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
@@ -97,12 +98,26 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 		let mut dir = env::current_dir().unwrap();
 		dir.push(file);		
 		let graph_proc = Command::new("./graphhopper.sh")
-							.current_dir(env.graph)							
-							.arg("import").arg(dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.current_dir(&env.graph)							
+							.arg("import").arg(&dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", graph_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&graph_proc.stdout));
-		println!("stderr: {}", String::from_utf8_lossy(&graph_proc.stderr));
+		println!("stderr: {}", String::from_utf8_lossy(&graph_proc.stderr));		
+
+		
+		let origin_file: &str = match dir.to_str() {
+			Some(val) => val,
+			None => panic!("not found origin file"),
+		};
+
+		let graph_file = str::replace(origin_file, ".pbf", "-gh");		
+		let mv_proc = Command::new("mv")							
+							.arg(graph_file).arg(&env.files).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+		
+		println!("status: {}", mv_proc.status);
+		println!("stdout: {}", String::from_utf8_lossy(&mv_proc.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&mv_proc.stderr));		
 	}
 
 	fn read_env(&self) -> Target {
@@ -135,13 +150,15 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 
 fn main() {    
 	let crimean: &str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
+	let caucasus: &str = "http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf";
+	let central: &str = "http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf";
 
-    let mut central = Mvm {
+    let mut district = Mvm {
     	source: crimean,
     	file: Src::None
     };
 
-    central.get_source();
-    central.convert_mvm_and_graph(); 
+    district.get_source();
+    district.convert_mvm_and_graph(); 
 
 }
