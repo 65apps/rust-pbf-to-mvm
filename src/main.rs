@@ -36,6 +36,8 @@ struct Target {
 impl<'a> Genetare<'a> for Mvm<'a> {
 
 	fn get_source(&mut self) {
+		println!("start convert {:?}", self.source);
+
 		let client = Client::new();	
 		let responce = client.get(self.source).send().unwrap();
 		
@@ -150,7 +152,7 @@ impl<'a> Genetare<'a> for Mvm<'a> {
 
 fn main() {    
 	let crimean: &str = "http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf";
-	let caucasus: &str = "http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf";
+	let northcaucasus: &str = "http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf";
 	let central: &str = "http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf";
 	let fareastern: &str = "http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf";
 	let northwestern: &str = "http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf";
@@ -159,12 +161,15 @@ fn main() {
 	let ural: &str = "http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf";
 	let volga: &str = "http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf";
 
-    let mut district = Mvm {
-    	source: volga,
-    	file: Src::None
-    };
+	let array = [crimean, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
 
-    district.get_source();
-    district.convert_mvm_and_graph(); 
+	for x in array.iter() {		
+		let mut district = Mvm {
+	    	source: x,
+	    	file: Src::None
+	    };
 
+	    district.get_source();
+	    district.convert_mvm_and_graph(); 
+	}
 }
