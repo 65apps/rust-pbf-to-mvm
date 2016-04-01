@@ -3,7 +3,7 @@ MAINTAINER Andrey Ivanov stayhardordie@gmail.com
 
 ENV RUST_VERSION=1.7.0
 ENV REPOSITORY=https://github.com/mapsme/omim.git
-ENV REPOSITORY_GENERATOR=https://github.com/stalehard/rust-pbf-to-mvm.git
+ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
 ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
 ENV OMIM_DIR=/srv/omim/tools/unix/generate_mwm.sh
@@ -23,7 +23,7 @@ RUN apt-get update && \
     libstdc++-4.8-dev \
     qt5-default \
     cmake \
-    libboost-all-dev \
+    libboost-all-dev \w
     mesa-utils \
     libtbb2 \
     libtbb-dev \
@@ -44,19 +44,28 @@ RUN apt-get update && \
     libgdal-dev \
     libexpat1-dev \
     libosmpbf-dev	
+
 WORKDIR $DIR
+
 RUN mkdir $FILES_DIR
+
 RUN wget https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
+
 RUN tar -xzf rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
     rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh --without=rust-docs && \
     rm -rf \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
+
 RUN git clone --depth=1 --recursive $REPOSITORY
+
 RUN cd omim && \
     echo | ./configure.sh
+
 WORKDIR $DIR
+
 RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+
 RUN \
     echo "===> add webupd8 repository..."  && \
     echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  && \
@@ -75,12 +84,18 @@ RUN \
     rm -rf /var/cache/oracle-jdk8-installer  && \
     apt-get clean  && \
     rm -rf /var/lib/apt/lists/*
+
 RUN git clone $REPOSITORY_GRAPH && \
     cd graphhopper && \
     git checkout 0.5 
+
 WORKDIR $DIR
+
 RUN git clone $REPOSITORY_GENERATOR && \    
     cd rust-pbf-to-mvm && \
     cargo build && \
     mv ./config.properties ../graphhopper/config.properties
+
+WORKDIR $DIR/rust-pbf-to-mvm
+
 CMD ["/bin/bash"]
