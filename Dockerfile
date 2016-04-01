@@ -23,7 +23,7 @@ RUN apt-get update && \
     libstdc++-4.8-dev \
     qt5-default \
     cmake \
-    libboost-all-dev \w
+    libboost-all-dev \
     mesa-utils \
     libtbb2 \
     libtbb-dev \
