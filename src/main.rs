@@ -81,7 +81,9 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 	}
 
 	fn convert_mvm_and_graph(&self) {
-		let env = self.read_env();						
+		let env = self.read_env();				
+
+
 		let mvm_proc = Command::new(env.omim)
 							.env("TARGET", &env.files)
 							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
@@ -146,7 +148,7 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 
 fn main() {    					
 	let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf");
-	let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North Caucasian.pbf");
+	let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North\ Caucasian.pbf");
 	let central = District::new("http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf", "Russia_Central.pbf");
 	let fareastern = District::new("http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf", "Russia_Far Eastern.pbf");
 	let northwestern = District::new("http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf", "Russia_Northwestern.pbf");
@@ -155,7 +157,7 @@ fn main() {
 	let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf");
 	let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf");
 
-	let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
+	let array = [northcaucasus];
 	for x in array.iter() {		
 		x.get_osm();	    
 	    x.convert_mvm_and_graph(); 
