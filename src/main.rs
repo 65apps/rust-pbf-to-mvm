@@ -144,19 +144,16 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 
 
 
-fn main() {    	
-	
-	let northwestern: &str = "http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf";
-	let siberian: &str = "http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf";
-	let south: &str = "http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf";
-	let ural: &str = "http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf";
-	let volga: &str = "http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf";
-
+fn main() {    					
 	let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf");
 	let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North Caucasian.pbf");
 	let central = District::new("http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf", "Russia_Central.pbf");
 	let fareastern = District::new("http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf", "Russia_Far Eastern.pbf");
-
+	let northwestern = District::new("http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf", "Russia_Northwestern.pbf");
+	let siberian = District::new("http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf", "Russia_Siberian.pbf");
+	let south = District::new("http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf", "Russia_Southern.pbf");
+	let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf");
+	let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf");
 
 	let array = [northcaucasus];
 	for x in array.iter() {		
