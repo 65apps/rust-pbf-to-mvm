@@ -2,7 +2,7 @@ FROM debian:jessie
 MAINTAINER Andrey Ivanov stayhardordie@gmail.com
 
 ENV RUST_VERSION=1.7.0
-ENV REPOSITORY=https://github.com/mapsme/omim.git
+ENV REPOSITORY=https://github.com/65apps/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
 ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
