@@ -155,7 +155,7 @@ fn main() {
 	let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf");
 	let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf");
 
-	let array = [northcaucasus];
+	let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
 	for x in array.iter() {		
 		x.get_osm();	    
 	    x.convert_mvm_and_graph(); 
