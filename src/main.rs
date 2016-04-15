@@ -83,23 +83,13 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 	fn convert_mvm_and_graph(&self) {
 		let env = self.read_env();				
 
-		// let split_mwm: Vec<&str> = self.name.split('-').collect();
-		// let mut mwm_file: String;
-		let whitespace: &str = " ";
-
-		// if (split_mwm.len()==2) {
-		// 	let first: &str = split_mwm[0];
-		// 	let last: &str = split_mwm[1];
-			
-
-		// 	mwm_file = first.to_string() + whitespace;
-		// 	mwm_file = mwm_file + last;
-		// }
-		let mwm_file = self.name.replace("-", whitespace);
+		let whitespace: &str = " ";		
 
 		let mvm_proc = Command::new(env.omim)
 							.env("TARGET", &env.files)
-							.arg(mwm_file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+
+		// let mv_mvm = 
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
@@ -120,10 +110,12 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 			None => panic!("not found origin file"),
 		};
 
-		let mut graph_file = origin_file.replace(".pbf", "-gh");		
-		graph_file = graph_file.replace("-", whitespace);
+		let graph_file = origin_file.replace(".pbf", "-gh");		
+		let mut new_graph_file = graph_file.replace("-", whitespace);
+		new_graph_file = env.files + &new_graph_file;
+
 		let mv_proc = Command::new("mv")							
-							.arg(graph_file).arg(&env.files).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.arg(graph_file).arg(new_graph_file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 		
 		println!("status: {}", mv_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mv_proc.stdout));
