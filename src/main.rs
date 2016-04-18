@@ -89,11 +89,13 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 							.env("TARGET", &env.files)
 							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
-		let new_mwm_file = self.name.replace("-", whitespace);
-		match std::fs::rename(env.files.clone() + &self.name, new_mwm_file) {
-			Err(_) => panic!("error rename mwm file"),
-		    Ok(_) => (),		
-		}
+		let old_file = self.name.replace("pbf", "mwm");
+        let new_mwm_file = old_file.replace("-", whitespace);        
+
+        match std::fs::rename(env.files.clone() + &old_file, env.files.clone()+ &new_mwm_file) {
+            Err(e) => panic!("error rename mwm file - {:?}", e),
+            Ok(_) => (),
+        }
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
