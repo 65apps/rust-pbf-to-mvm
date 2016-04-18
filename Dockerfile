@@ -16,6 +16,7 @@ RUN apt-get update && \
     ca-certificates \
     wget \
     git \
+    nano \
     libssl-dev \
     clang \
     libc++-dev \

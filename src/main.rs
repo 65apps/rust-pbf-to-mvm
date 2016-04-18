@@ -89,7 +89,11 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 							.env("TARGET", &env.files)
 							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
-		// let mv_mvm = 
+		let new_mwm_file = self.name.replace("-", whitespace);
+		match std::fs::rename(env.files.clone() + &self.name, new_mwm_file) {
+			Err(_) => panic!("error rename mwm file"),
+		    Ok(_) => (),		
+		}
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
@@ -111,7 +115,8 @@ impl<'a, 'b> Genetare<'a, 'b> for District<'a, 'b> {
 		};
 
 		let graph_file = origin_file.replace(".pbf", "-gh");		
-		let mut new_graph_file = graph_file.replace("-", whitespace);
+		let mut new_graph_file = self.name.replace("-", whitespace);
+		new_graph_file = new_graph_file.replace(".pbf", "-gh");
 		new_graph_file = env.files + &new_graph_file;
 
 		let mv_proc = Command::new("mv")							
