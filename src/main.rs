@@ -42,7 +42,7 @@ impl<'a> District<'a> {
 
 impl<'a> Genetare<'a> for District<'a> {
 
-	fn get_osm(&self) {
+	fn get_osm(&self) {		
 		println!("start convert {:?}", self.url);		
 
 		let client = Client::new();	
@@ -126,14 +126,20 @@ impl<'a> Genetare<'a> for District<'a> {
 		self.get_poly();			
 
 		let whitespace: &str = " ";
-		let poly = self.name.replace("pbf", "poly");	
-		println!("{:?}", poly);					
+		let poly = self.name.replace("pbf", "poly");							
+		
+		let path = env::current_dir().unwrap();
+		let current_dir = match path.to_str()  {
+		    Some(v) => v,
+		    None => "",
+		}; 
 
-		let mvm_proc = Command::new(env.omim)							
-							.env("COASTS", "WorldCoasts.geom")
-							.env("BORDER", &poly)
+		let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")							
+							.current_dir(&env.omim)
+							.env("COASTS", current_dir.to_string() + "WorldCoasts.geom")
+							.env("BORDER", current_dir.to_string() + &poly)
 							.env("TARGET", &env.files)
-							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.arg(current_dir.to_string() + &self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
