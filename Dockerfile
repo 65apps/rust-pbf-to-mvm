@@ -6,7 +6,7 @@ ENV REPOSITORY=https://github.com/65apps/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
 ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
-ENV OMIM_DIR=/srv/
+ENV OMIM_DIR=/srv/omim/tools/unix/generate_mwm.sh
 ENV FILES_DIR=/mnt/files/
 ENV GRAPH_DIR=/srv/graphhopper/
 
