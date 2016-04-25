@@ -126,12 +126,13 @@ impl<'a> Genetare<'a> for District<'a> {
 		self.get_poly();			
 
 		let whitespace: &str = " ";
-		let poly = self.name.replace("pbf", "poly");				
+		let poly = self.name.replace("pbf", "poly");	
+		println!("{:?}", poly);					
 
-		let mvm_proc = Command::new(env.omim)
-							.env("TARGET", &env.files)
+		let mvm_proc = Command::new(env.omim)							
 							.env("COASTS", "WorldCoasts.geom")
 							.env("BORDER", &poly)
+							.env("TARGET", &env.files)
 							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
