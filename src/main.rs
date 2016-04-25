@@ -128,18 +128,19 @@ impl<'a> Genetare<'a> for District<'a> {
 		let whitespace: &str = " ";
 		let poly = self.name.replace("pbf", "poly");							
 		
-		// let path = env::current_dir().unwrap();
-		// let current_dir = match path.to_str()  {
-		//     Some(v) => v.to_string() + "/",
-		//     None => String::from(""),
-		// }; 
+		let path = env::current_dir().unwrap();
+        let current_dir = match path.to_str()  {
+            Some(v) => v.to_string() + "/",
+            None => String::from(""),
+        };
 
-		env::set_var("COASTS", "WorldCoasts.geom");
-		env::set_var("BORDER", &poly);
-		let mvm_proc = Command::new(&env.omim)							
-							// .current_dir(&env.omim)							
-							.env("TARGET", &env.files)
-							.arg(&self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+        env::set_var("COASTS", "WorldCoasts.geom");
+        env::set_var("BORDER", &poly);
+        env::set_var("TARGET", &env.files);
+
+        let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")
+	        .current_dir(&env.omim)
+	        .arg(current_dir.clone() + &self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
@@ -156,8 +157,8 @@ impl<'a> Genetare<'a> for District<'a> {
 		let mut dir = env::current_dir().unwrap();
 		dir.push(self.name);		
 		let graph_proc = Command::new("./graphhopper.sh")
-							.current_dir(&env.graph)							
-							.arg("import").arg(&dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+			.current_dir(&env.graph)							
+			.arg("import").arg(&dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", graph_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&graph_proc.stdout));
@@ -174,7 +175,7 @@ impl<'a> Genetare<'a> for District<'a> {
 		new_graph_file = env.files + &new_graph_file;
 
 		let mv_proc = Command::new("mv")							
-							.arg(graph_file).arg(new_graph_file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+			.arg(graph_file).arg(new_graph_file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });		
 		
 		println!("status: {}", mv_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mv_proc.stdout));
@@ -213,16 +214,16 @@ impl<'a> Genetare<'a> for District<'a> {
 
 fn main() {    					
 	let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf", "http://download.geofabrik.de/russia/crimean-fed-district.poly");
-	// let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North-Caucasian.pbf");
-	// let central = District::new("http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf", "Russia_Central.pbf");
-	// let fareastern = District::new("http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf", "Russia_Far-Eastern.pbf");
-	// let northwestern = District::new("http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf", "Russia_Northwestern.pbf");
-	// let siberian = District::new("http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf", "Russia_Siberian.pbf");
-	// let south = District::new("http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf", "Russia_Southern.pbf");
-	// let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf");
-	// let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf");
+	let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North-Caucasian.pbf", "http://download.geofabrik.de/russia/north-caucasus-fed-district.poly");
+	let central = District::new("http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf", "Russia_Central.pbf", "http://download.geofabrik.de/russia/central-fed-district.poly");
+	let fareastern = District::new("http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf", "Russia_Far-Eastern.pbf", "http://download.geofabrik.de/russia/far-eastern-fed-district.poly");
+	let northwestern = District::new("http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf", "Russia_Northwestern.pbf", "http://download.geofabrik.de/russia/northwestern-fed-district.poly");
+	let siberian = District::new("http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf", "Russia_Siberian.pbf", "http://download.geofabrik.de/russia/siberian-fed-district.poly");
+	let south = District::new("http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf", "Russia_Southern.pbf", "http://download.geofabrik.de/russia/south-fed-district.poly");
+	let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf", "http://download.geofabrik.de/russia/ural-fed-district.poly");
+	let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf", "http://download.geofabrik.de/russia/volga-fed-district.poly");
 
-	let array = [crimea];
+	let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
 	for x in array.iter() {				
 	    x.convert_mvm_and_graph(); 
 	}
