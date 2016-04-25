@@ -134,6 +134,10 @@ impl<'a> Genetare<'a> for District<'a> {
 							.env("BORDER", &poly)
 							.arg(self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
+		println!("status: {}", mvm_proc.status);
+		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&mvm_proc.stderr));
+
 		let old_file = self.name.replace("pbf", "mwm");
         let new_mwm_file = old_file.replace("-", whitespace);        
 
@@ -141,10 +145,6 @@ impl<'a> Genetare<'a> for District<'a> {
             Err(e) => panic!("error rename mwm file - {:?}", e),
             Ok(_) => (),
         }
-
-		println!("status: {}", mvm_proc.status);
-		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
-		println!("stderr: {}", String::from_utf8_lossy(&mvm_proc.stderr));
 
 		let mut dir = env::current_dir().unwrap();
 		dir.push(self.name);		
