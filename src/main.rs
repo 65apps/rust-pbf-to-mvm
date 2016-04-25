@@ -130,16 +130,16 @@ impl<'a> Genetare<'a> for District<'a> {
 		
 		let path = env::current_dir().unwrap();
 		let current_dir = match path.to_str()  {
-		    Some(v) => v,
+		    Some(v) => v.to_string() + "/",
 		    None => "",
 		}; 
 
 		let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")							
 							.current_dir(&env.omim)
-							.env("COASTS", current_dir.to_string() + "WorldCoasts.geom")
-							.env("BORDER", current_dir.to_string() + &poly)
+							.env("COASTS", current_dir + "WorldCoasts.geom")
+							.env("BORDER", current_dir + &poly)
 							.env("TARGET", &env.files)
-							.arg(current_dir.to_string() + &self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+							.arg(current_dir + &self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
