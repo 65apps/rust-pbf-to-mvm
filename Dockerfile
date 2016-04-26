@@ -95,11 +95,14 @@ RUN git clone $REPOSITORY_GENERATOR && \
     git lfs pull && \
     rm -rf git-lfs-1.2.0 git-lfs-linux-amd64-1.2.0.tar.gz
 
+WORKDIR $DIR/rust-pbf-to-mvm
+
 RUN git clone --depth=1 --recursive $REPOSITORY_OMIM
 
 RUN cd omim && \
-    echo | ./configure.sh && \   
-    CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+    echo | ./configure.sh 
+
+RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 WORKDIR $DIR/rust-pbf-to-mvm
 
