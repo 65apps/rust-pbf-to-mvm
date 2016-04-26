@@ -1,12 +1,11 @@
 FROM debian:jessie
-MAINTAINER Andrey Ivanov stayhardordie@gmail.com
+MAINTAINER Andrey Ivanov
 
 ENV RUST_VERSION=1.7.0
-ENV REPOSITORY=https://github.com/65apps/omim.git
+ENV REPOSITORY_OMIM=https://github.com/65apps/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
 ENV REPOSITORY_GRAPH=https://github.com/graphhopper/graphhopper.git
 ENV DIR=/srv
-ENV OMIM_DIR=/srv/
 ENV FILES_DIR=/mnt/files/
 ENV GRAPH_DIR=/srv/graphhopper/
 
@@ -58,15 +57,6 @@ RUN tar -xzf rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 
-RUN git clone --depth=1 --recursive $REPOSITORY
-
-RUN cd omim && \
-    echo | ./configure.sh
-
-WORKDIR $DIR
-
-RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
-
 RUN \
     echo "===> add webupd8 repository..."  && \
     echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  && \
@@ -95,7 +85,21 @@ WORKDIR $DIR
 RUN git clone $REPOSITORY_GENERATOR && \    
     cd rust-pbf-to-mvm && \
     cargo build && \
-    mv ./config.properties ../graphhopper/config.properties
+    mv ./config.properties ../graphhopper/config.properties && \
+    wget https://github.com/github/git-lfs/releases/download/v1.2.0/git-lfs-linux-amd64-1.2.0.tar.gz && \
+    tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \    
+    cd git-lfs-1.2.0 && \
+    ./install.sh && \
+    cd ../ && \
+    git lfs install && \
+    git lfs pull && \
+    rm -rf git-lfs-1.2.0 git-lfs-linux-amd64-1.2.0.tar.gz
+
+RUN git clone --depth=1 --recursive $REPOSITORY_OMIM
+
+RUN cd omim && \
+    echo | ./configure.sh && \   
+    CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 WORKDIR $DIR/rust-pbf-to-mvm
 

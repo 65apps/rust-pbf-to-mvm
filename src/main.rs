@@ -8,8 +8,7 @@ use std::io::prelude::*;
 use std::process::Command;
 use std::env;
 
-struct Target {
-	omim: String,
+struct Target {	
 	files: String,
 	graph: String
 }
@@ -138,8 +137,7 @@ impl<'a> Genetare<'a> for District<'a> {
         env::set_var("BORDER", &poly);
         env::set_var("TARGET", &env.files);
 
-        let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")
-	        .current_dir(&env.omim)
+        let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")	        
 	        .arg(current_dir.clone() + &self.name).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
@@ -182,15 +180,9 @@ impl<'a> Genetare<'a> for District<'a> {
 		println!("stderr: {}", String::from_utf8_lossy(&mv_proc.stderr));	
 	}
 
-	fn read_env(&self) -> Target {
-		let omim_var: &str = "OMIM_DIR";
+	fn read_env(&self) -> Target {		
 		let files_var: &str = "FILES_DIR";
 		let graph_var: &str = "GRAPH_DIR";
-
-		let omim = match env::var(omim_var) {
-			Err(_) => panic!("error read env OMIM_DIR"),
-		    Ok(val) => val,		    
-		};
 
 		let files = match env::var(files_var) {
 			Err(_) => panic!("error read env FILES_DIR"),
@@ -202,8 +194,7 @@ impl<'a> Genetare<'a> for District<'a> {
 		    Ok(val) => val,
 		};
 
-		Target {
-			omim: omim,
+		Target {			
 			files: files,
 			graph: graph
 		}
