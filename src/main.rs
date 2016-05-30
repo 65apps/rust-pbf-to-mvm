@@ -42,7 +42,7 @@ impl<'a> District<'a> {
 impl<'a> Genetare<'a> for District<'a> {
 
 	fn get_osm(&self) {		
-		println!("start convert {:?}", self.url);		
+		println!("start download {:?}", self.url);		
 
 		let client = Client::new();	
 		let responce = client.get(self.url).send().unwrap();
@@ -204,18 +204,60 @@ impl<'a> Genetare<'a> for District<'a> {
 
 
 fn main() {    					
-	let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf", "http://download.geofabrik.de/russia/crimean-fed-district.poly");
-	let northcaucasus = District::new("http://download.geofabrik.de/russia/north-caucasus-fed-district-latest.osm.pbf", "Russia_North-Caucasian.pbf", "http://download.geofabrik.de/russia/north-caucasus-fed-district.poly");
-	let central = District::new("http://download.geofabrik.de/russia/central-fed-district-latest.osm.pbf", "Russia_Central.pbf", "http://download.geofabrik.de/russia/central-fed-district.poly");
-	let fareastern = District::new("http://download.geofabrik.de/russia/far-eastern-fed-district-latest.osm.pbf", "Russia_Far-Eastern.pbf", "http://download.geofabrik.de/russia/far-eastern-fed-district.poly");
-	let northwestern = District::new("http://download.geofabrik.de/russia/northwestern-fed-district-latest.osm.pbf", "Russia_Northwestern.pbf", "http://download.geofabrik.de/russia/northwestern-fed-district.poly");
-	let siberian = District::new("http://download.geofabrik.de/russia/siberian-fed-district-latest.osm.pbf", "Russia_Siberian.pbf", "http://download.geofabrik.de/russia/siberian-fed-district.poly");
-	let south = District::new("http://download.geofabrik.de/russia/south-fed-district-latest.osm.pbf", "Russia_Southern.pbf", "http://download.geofabrik.de/russia/south-fed-district.poly");
-	let ural = District::new("http://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf", "Russia_Urals.pbf", "http://download.geofabrik.de/russia/ural-fed-district.poly");
-	let volga = District::new("http://download.geofabrik.de/russia/volga-fed-district-latest.osm.pbf", "Russia_Volga.pbf", "http://download.geofabrik.de/russia/volga-fed-district.poly");
 
-	let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
-	for x in array.iter() {				
-	    x.convert_mvm_and_graph(); 
-	}
+
+	// let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf", "http://download.geofabrik.de/russia/crimean-fed-district.poly");
+
+	// let altai_krai = District::new("", "Russia_Altai-Krai.pbf");
+	// let altai_repub = District::new("", "Russia_Altai-Republic.pbf");
+	// let amur_obl = District::new("", "Russia_Amur-Oblast.pbf");
+	// let arkhangelsk_obl_central = District::new("", "Russia_Arkhangelsk Oblast_Central.pbf");
+	// let arkhangelsk_obl_north = District::new("", "Russia_Arkhangelsk Oblast_North.pbf");
+	// let astrakhan_obl = District::new("", "Russia_Astrakhan Oblast.pbf");
+	// let bashkortostan = District::new("", "Russia_Bashkortostan.pbf");
+	// let belgorod_obl = District::new("", "Russia_Belgorod Oblast.pbf");
+	// let bryansk_obl = District::new("", "Russia_Bryansk Oblast.pbf");
+	// let buryatia = District::new("", "Russia_Buryatia.pbf");
+	// let chechen_rebub = District::new("", "Russia_Chechen Republic.pbf");
+	// let chelyabinsk_obl = District::new("", "Russia_Chelyabinsk Oblast.pbf");
+	// let chukotka_autonomous_okrug = District::new("", "Russia_Chukotka Autonomous Okrug.pbf");
+	// let chuvashia = District::new("", "Russia_Chuvashia.pbf");
+	// let ingushetia = District::new("", "Russia_Ingushetia.pbf");
+	// let irkutsk_obl = District::new("", "Russia_Irkutsk Oblast.pbf");
+	// let ivanovo_obl = District::new("", "Russia_Ivanovo Oblast.pbf");
+	// let jewish_autonomous_okrug = District::new("", "Russia_Ivanovo Oblast.pbf");
+	// let kabardino_balkaria = District::new("", "Russia_Kabardino-Balkaria.pbf");
+	// let kaliningrad_obl = District::new("", "Russia_Kaliningrad Oblast.pbf");
+	// let kaluga_obl = District::new("", "Russia_Kaluga Oblast.pbf");
+	// let kamchatka_krai = District::new("", "Russia_Kamchatka Krai.pbf");
+	// let karachay_cherkessia = District::new("", "Russia_Karachay-Cherkessia.pbf");
+	// let kemerov_obl = District::new("", "Russia_Kemerov Oblast.pbf");
+	// let khabarovsk_krai = District::new("", "Russia_Khabarovsk Krai.pbf");
+	// let khakassia = District::new("", "Russia_Khakassia.pbf");
+	// let kirov_obl = District::new("", "Russia_Kirov Oblast.pbf");
+	// let komi_repub = District::new("", "Russia_Komi Republic.pbf");
+	// let kostroma_obl = District::new("", "Russia_Kostroma Oblast.pbf");
+	// let krasnodar_krai = District::new("", "Russia_Krasnodar Krai.pbf");
+	// let krasnodar_krai_adygeya = District::new("", "Russia_Krasnodar Krai_Adygeya.pbf");
+	// let krasnoyarsk_krai_north = District::new("", "Russia_Krasnoyarsk Krai_North.pbf");
+	// let krasnoyarsk_krai_south = District::new("", "Russia_Krasnoyarsk Krai_South.pbf");
+	// let kurgan_obl = District::new("", "Russia_Kurgan Oblast.pbf");
+	// let kursk_obl = District::new("", "Russia_Kursk Oblast.pbf");
+	// let leningrad_obl_karelsky = District::new("", "Russia_Leningradskaya Oblast_Karelsky.pbf");
+	// let leningrad_obl_south = District::new("", "Russia_Leningradskaya Oblast_Southeast.pbf");
+	// let lipetsk_obl = District::new("", "Russia_Lipetsk Oblast.pbf");
+	// let magadan_obl = District::new("", "Russia_Magadan Oblast.pbf");
+	// let mari_el = District::new("", "Russia_Mari El.pbf");
+	// let moscow_obl_east = District::new("", "Russia_Moscow Oblast_East.pbf");
+	// let moscow_obl_west = District::new("", "Russia_Moscow Oblast_West.pbf");
+	// let moscow = District::new("", "Russia_Moscow.pbf");
+
+
+
+	
+
+	// let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
+	// for x in array.iter() {				
+	//     x.convert_mvm_and_graph(); 
+	// }
 }
