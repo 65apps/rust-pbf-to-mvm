@@ -1,7 +1,7 @@
 FROM debian:jessie
 MAINTAINER Andrey Ivanov
 
-ENV RUST_VERSION=1.7.0
+ENV RUST_VERSION=1.8.0
 ENV REPOSITORY_OMIM=https://github.com/65apps/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
 ENV DIR=/srv
@@ -21,7 +21,10 @@ RUN apt-get update && \
     libstdc++-4.8-dev \
     qt5-default \
     cmake \
-    libboost-all-dev \
+    libboost-all-dev 
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     mesa-utils \
     libtbb2 \
     libtbb-dev \
@@ -77,6 +80,25 @@ RUN cd omim && \
     echo | ./configure.sh 
 
 RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+
+RUN \
+    echo "===> add webupd8 repository..."  && \
+    echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  && \
+    echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list  && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886  && \
+    apt-get update  && \
+    \
+    \
+    echo "===> install Java"  && \
+    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections  && \
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections  && \
+    DEBIAN_FRONTEND=noninteractive  apt-get install -y --force-yes oracle-java8-installer oracle-java8-set-default maven && \
+    \
+    \
+    echo "===> clean up..."  && \
+    rm -rf /var/cache/oracle-jdk8-installer  && \
+    apt-get clean  && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR $DIR/rust-pbf-to-mvm
 
