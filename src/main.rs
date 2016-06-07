@@ -1,4 +1,5 @@
 extern crate hyper;
+extern crate zip;
 
 use hyper::client::Client;
 use hyper::header::parsing::*;
@@ -22,6 +23,8 @@ trait Genetare<'a, 'b> {
 	fn split_to_region(&self) -> std::io::Result<()>;	
 
 	fn convert_mvm(&self, polygon: &'b str);
+
+	fn zip_file(&self, polygon: &'b str) -> zip::result::ZipResult<()>;
 
 	fn read_env(&self) -> Target;
 }
@@ -61,7 +64,7 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 	    let mut buffer_read = BufReader::new(responce);
 	    let mut download: u64 = 0;   	    	
 
-	    while  download != size {
+	    while download != size {
 	    	let length = {	
 	    		let buffer = buffer_read.fill_buf().unwrap();	
 	    		
@@ -101,23 +104,13 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 			println!("stderr: {}", String::from_utf8_lossy(&split_proc.stderr));	  
 
 			self.convert_mvm(polygon_dir_str);
+			self.zip_file(polygon_dir_str);
 		}		
 	 	Ok(())				
 	}
-
-
 	
 	fn convert_mvm(&self, polygon: &'b str) {
-		let env = self.read_env();		
-		
-		// let whitespace: &str = " ";
-		// let poly = self.name.replace("pbf", "poly");							
-		
-		// let path = env::current_dir().unwrap();
-  //       let current_dir = match path.to_str()  {
-  //           Some(v) => v.to_string() + "/",
-  //           None => String::from(""),
-  //       };
+		let env = self.read_env();	
 
   		env::set_var("BORDERS_PATH", "polygons");
         env::set_var("COASTS", "WorldCoasts.geom");
@@ -135,41 +128,37 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 		println!("status: {}", mvm_proc.status);
 		println!("stdout: {}", String::from_utf8_lossy(&mvm_proc.stdout));
 		println!("stderr: {}", String::from_utf8_lossy(&mvm_proc.stderr));
+	}
 
-		// let old_file = self.name.replace("pbf", "mwm");
-  //       let new_mwm_file = old_file.replace("-", whitespace);        
-
-  //       match std::fs::rename(env.files.clone() + &old_file, env.files.clone()+ &new_mwm_file) {
-  //           Err(e) => panic!("error rename mwm file - {:?}", e),
-  //           Ok(_) => (),
-  //       }
-
-		// let mut dir = env::current_dir().unwrap();
-		// dir.push(self.name);		
-		// let graph_proc = Command::new("./graphhopper.sh")
-		// 	.current_dir(&env.graph)							
-		// 	.arg("import").arg(&dir).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
-
-		// println!("status: {}", graph_proc.status);
-		// println!("stdout: {}", String::from_utf8_lossy(&graph_proc.stdout));
-		// println!("stderr: {}", String::from_utf8_lossy(&graph_proc.stderr));		
+	fn zip_file(&self, polygon: &'b str) -> zip::result::ZipResult<()> {
+		let mut zip_name = polygon.replace("polygons/", "");
+		zip_name = zip_name.replace("poly", "zip");
+		let mwm_file = zip_name.replace("zip", "mwm");		
 		
-		// let origin_file: &str = match dir.to_str() {
-		// 	Some(val) => val,
-		// 	None => panic!("not found origin file"),
-		// };
+		let file = File::create(zip_name).unwrap();
 
-		// let graph_file = origin_file.replace(".pbf", "-gh");		
-		// let mut new_graph_file = self.name.replace("-", whitespace);
-		// new_graph_file = new_graph_file.replace(".pbf", "-gh");
-		// new_graph_file = env.files + &new_graph_file;
+		let mut zip = zip::ZipWriter::new(file);
+		try!(zip.start_file(mwm_file.clone(), zip::CompressionMethod::Deflated));	
 
-		// let mv_proc = Command::new("mv")							
-		// 	.arg(graph_file).arg(new_graph_file).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });		
-		
-		// println!("status: {}", mv_proc.status);
-		// println!("stdout: {}", String::from_utf8_lossy(&mv_proc.stdout));
-		// println!("stderr: {}", String::from_utf8_lossy(&mv_proc.stderr));	
+		let mut mwm = try!(File::open(&mwm_file));
+		let mut buffer_read = BufReader::new(mwm);	
+
+		let mut condition: usize = 1;		
+
+		while condition != 0 {
+			let length = {	
+	    		let buffer = buffer_read.fill_buf().unwrap();	
+
+	    		zip.write_all(buffer);
+				buffer.len()
+	    	};
+
+	    	buffer_read.consume(length);    		
+    		condition = length;
+		}
+	    
+		try!(zip.finish());		
+		Ok(())
 	}
 
 	fn read_env(&self) -> Target {		
@@ -187,60 +176,8 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 }
 
 
-
 fn main() {    					
-	let russia = Russia::new("http://data.gis-lab.info/osm_dump/dump/latest/RU.osm.pbf");
-	// russia.get_osm();
-	russia.split_to_region();
-
-	// let crimea = District::new("http://download.geofabrik.de/russia/crimean-fed-district-latest.osm.pbf", "Crimea.pbf", "http://download.geofabrik.de/russia/crimean-fed-district.poly");
-
-	// let altai_krai = "Russia_Altai Krai.poly";
-	// let altai_repub = "Russia_Altai Republic.poly";
-	// let amur_obl = "Russia_Amur Oblast.poly";
-	// let arkhangelsk_obl_central = "Russia_Arkhangelsk Oblast_Central.poly";
-	// let arkhangelsk_obl_north = "Russia_Arkhangelsk Oblast_North.poly";
-	// let astrakhan_obl = "Russia_Astrakhan Oblast.poly";
-	// let bashkortostan = "Russia_Bashkortostan.poly";
-	// let belgorod_obl = "Russia_Belgorod Oblast.poly";
-	// let bryansk_obl = "Russia_Bryansk Oblast.poly";
-	// let buryatia = "Russia_Buryatia.poly";
-	// let chechen_rebub = "Russia_Chechen Republic.poly";
-	// let chelyabinsk_obl = "Russia_Chelyabinsk Oblast.poly";
-	// let chukotka_autonomous_okrug = "Russia_Chukotka Autonomous Okrug.poly";
-	// let chuvashia = "Russia_Chuvashia.poly";
-	// let ingushetia = "Russia_Ingushetia.poly";
-	// let irkutsk_obl = "Russia_Irkutsk Oblast.poly";
-	// let ivanovo_obl = "Russia_Ivanovo Oblast.poly";
-	// let jewish_autonomous_okrug = "Russia_Ivanovo Oblast.poly";
-	// let kabardino_balkaria = "Russia_Kabardino-Balkaria.poly";
-	// let kaliningrad_obl = "Russia_Kaliningrad Oblast.poly";
-	// let kaluga_obl = "Russia_Kaluga Oblast.poly";
-	// let kamchatka_krai = "Russia_Kamchatka Krai.poly";
-	// let karachay_cherkessia = "Russia_Karachay-Cherkessia.poly";
-	// let kemerov_obl = "Russia_Kemerov Oblast.poly";
-	// let khabarovsk_krai = "Russia_Khabarovsk Krai.poly";
-	// let khakassia = "Russia_Khakassia.poly";
-	// let kirov_obl = "Russia_Kirov Oblast.poly";
-	// let komi_repub = "Russia_Komi Republic.poly";
-	// let kostroma_obl = "Russia_Kostroma Oblast.poly";
-	// let krasnodar_krai = "Russia_Krasnodar Krai.poly";
-	// let krasnodar_krai_adygeya = "Russia_Krasnodar Krai_Adygeya.poly";
-	// let krasnoyarsk_krai_north = "Russia_Krasnoyarsk Krai_North.poly";
-	// let krasnoyarsk_krai_south = "Russia_Krasnoyarsk Krai_South.poly";
-	// let kurgan_obl = "Russia_Kurgan Oblast.poly";
-	// let kursk_obl = "Russia_Kursk Oblast.poly";
-	// let leningrad_obl_karelsky = "Russia_Leningradskaya Oblast_Karelsky.poly";
-	// let leningrad_obl_south = "Russia_Leningradskaya Oblast_Southeast.poly";
-	// let lipetsk_obl = "Russia_Lipetsk Oblast.poly";
-	// let magadan_obl = "Russia_Magadan Oblast.poly";
-	// let mari_el = "Russia_Mari El.poly";
-	// let moscow_obl_east = "Russia_Moscow Oblast_East.poly";
-	// let moscow_obl_west = "Russia_Moscow Oblast_West.poly";
-	// let moscow = "Russia_Moscow.poly";
-
-	// let array = [crimea, northcaucasus, central, fareastern, northwestern, siberian, south, ural, volga];
-	// for x in array.iter() {				
-	//     x.convert_mvm_and_graph(); 
-	// }
+	let russia = Russia::new("http://data.gis-lab.info/osm_dump/dump/latest/RU.osm.pbf");	
+	russia.get_osm();
+	russia.split_to_region();	
 }
