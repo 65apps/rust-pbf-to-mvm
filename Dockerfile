@@ -105,7 +105,8 @@ WORKDIR $DIR/rust-pbf-to-mvm
 
 RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
     cd omim && \
-    echo | ./configure.sh && cd .. \
-    CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+    echo | ./configure.sh
+
+RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 CMD ["/bin/bash"]
