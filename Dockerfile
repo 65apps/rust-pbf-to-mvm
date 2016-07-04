@@ -17,6 +17,7 @@ RUN apt-get update && \
     nano \
     clang-3.6 \
     libbz2-dev \
+    libssl-dev \
     libc++-dev \
     libboost-iostreams-dev \
     libglu1-mesa-dev \
@@ -62,11 +63,12 @@ RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm && \
     mkdir build && cd build && \
     cmake $DIR/llvm && \
     make cxx && \
-    make install-libcxx install-libcxxabi && \
-    rm -r /usr/include/c++/v1/ && \
-    cp llvm/build/include/__cxxabi_config.h /usr/include/ && \
-    cp llvm/build/include/cxxabi.h /usr/include/ && \
-    cp llvm/build/include/c++/v1 /usr/include/c++/
+    make install-libcxx install-libcxxabi 
+
+RUN rm -r /usr/include/c++/v1/ && \
+    mv llvm/build/include/__cxxabi_config.h /usr/include/ && \
+    mv llvm/build/include/cxxabi.h /usr/include/ && \
+    mv llvm/build/include/c++/v1 /usr/include/c++/
 
 RUN \
     echo "===> add webupd8 repository..."  && \
@@ -87,11 +89,11 @@ RUN \
     apt-get clean  && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone $REPOSITORY_GENERATOR && \    
+RUN git clone $REPOSITORY_GENERATOR && \
     cd rust-pbf-to-mvm && \
-    cargo build && \    
+    cargo build && \
     wget https://github.com/github/git-lfs/releases/download/v1.2.0/git-lfs-linux-amd64-1.2.0.tar.gz && \
-    tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \    
+    tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \
     cd git-lfs-1.2.0 && \
     ./install.sh && \
     cd ../ && \
@@ -103,7 +105,7 @@ WORKDIR $DIR/rust-pbf-to-mvm
 
 RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
     cd omim && \
-    echo | ./configure.sh && \
+    echo | ./configure.sh && cd .. \
     CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 CMD ["/bin/bash"]
