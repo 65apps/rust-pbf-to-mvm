@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:14.04
 MAINTAINER Andrey Ivanov
 
 ENV RUST_VERSION=1.8.0
@@ -11,44 +11,33 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
+    libgl1-mesa-dev \
     wget \
-    git \
+    git subversion \
     nano \
-    libssl-dev \
-    clang \
+    clang-3.6 \
+    libbz2-dev \
     libc++-dev \
+    libboost-iostreams-dev \
     libglu1-mesa-dev \
-    libstdc++-4.8-dev \
-    qt5-default \
-    cmake \
-    libboost-all-dev 
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    mesa-utils \
     libtbb2 \
+    libluabind0.9.1 \
+    liblua50 \
+    libstxxl1 \
     libtbb-dev \
     libluabind-dev \
-    libluabind0.9.1 \
-    lua5.1 \
-    osmpbf-bin \
-    libprotobuf-dev \
     libstxxl-dev \
-    libxml2-dev \
-    libsparsehash-dev \
-    libbz2-dev \
-    zlib1g-dev \
-    libzip-dev \
-    libgomp1 \
-    liblua5.1-0-dev \
-    pkg-config \
-    libgdal-dev \
-    libexpat1-dev \
-    libosmpbf-dev	
+    libosmpbf-dev \
+    libprotobuf-dev \
+    libboost-all-dev \
+    qt5-default
 
-WORKDIR $DIR
+RUN ln -s /usr/lib/llvm-3.6/bin/clang /usr/bin/clang && \
+    ln -s /usr/lib/llvm-3.6/bin/clang++ /usr/bin/clang++
 
 RUN mkdir $FILES_DIR
+
+WORKDIR $DIR
 
 RUN wget https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 
@@ -58,28 +47,26 @@ RUN tar -xzf rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu \
         rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 
-WORKDIR $DIR
+RUN wget http://www.cmake.org/files/v3.5/cmake-3.5.2.tar.gz && \
+    tar xf cmake-3.5.2.tar.gz && \
+    cd cmake-3.5.2 && \
+    ./configure && \
+    make && make install && \
+    ln -sf /srv/cmake-3.5.2/bin/cmake /usr/bin/cmake
 
-RUN git clone $REPOSITORY_GENERATOR && \    
-    cd rust-pbf-to-mvm && \
-    cargo build && \    
-    wget https://github.com/github/git-lfs/releases/download/v1.2.0/git-lfs-linux-amd64-1.2.0.tar.gz && \
-    tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \    
-    cd git-lfs-1.2.0 && \
-    ./install.sh && \
-    cd ../ && \
-    git lfs install && \
-    git lfs pull && \
-    rm -rf git-lfs-1.2.0 git-lfs-linux-amd64-1.2.0.tar.gz
-
-WORKDIR $DIR/rust-pbf-to-mvm
-
-RUN git clone --depth=1 --recursive $REPOSITORY_OMIM
-
-RUN cd omim && \
-    echo | ./configure.sh 
-
-RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm && \
+    cd llvm/projects && \
+    svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx && \
+    svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi && \
+    cd .. && \
+    mkdir build && cd build && \
+    cmake $DIR/llvm && \
+    make cxx && \
+    make install-libcxx install-libcxxabi && \
+    rm -r /usr/include/c++/v1/ && \
+    cp llvm/build/include/__cxxabi_config.h /usr/include/ && \
+    cp llvm/build/include/cxxabi.h /usr/include/ && \
+    cp llvm/build/include/c++/v1 /usr/include/c++/
 
 RUN \
     echo "===> add webupd8 repository..."  && \
@@ -100,6 +87,23 @@ RUN \
     apt-get clean  && \
     rm -rf /var/lib/apt/lists/*
 
+RUN git clone $REPOSITORY_GENERATOR && \    
+    cd rust-pbf-to-mvm && \
+    cargo build && \    
+    wget https://github.com/github/git-lfs/releases/download/v1.2.0/git-lfs-linux-amd64-1.2.0.tar.gz && \
+    tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \    
+    cd git-lfs-1.2.0 && \
+    ./install.sh && \
+    cd ../ && \
+    git lfs install && \
+    git lfs pull && \
+    rm -rf git-lfs-1.2.0 git-lfs-linux-amd64-1.2.0.tar.gz
+
 WORKDIR $DIR/rust-pbf-to-mvm
+
+RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
+    cd omim && \
+    echo | ./configure.sh && \
+    CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 CMD ["/bin/bash"]
