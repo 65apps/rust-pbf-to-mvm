@@ -11,6 +11,8 @@ use std::env;
 
 struct Target {	
 	files: String,	
+	dir: String,
+	generator: String,
 }
 
 struct Russia<'a> {
@@ -110,19 +112,24 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 	}
 	
 	fn convert_mvm(&self, polygon: &'b str) {
-		let env = self.read_env();	
+		let var = self.read_env();	
 
-  		env::set_var("BORDERS_PATH", "polygons");
-        env::set_var("COASTS", "WorldCoasts.geom");
-        env::set_var("BORDER", polygon);
-        env::set_var("TARGET", &env.files);
+		let polygons_path = var.generator.to_owned() + "polygons";
+		let coasts_path = var.generator.to_owned() + "WorldCoasts.geom";
+		let border_path = var.generator.to_owned() + polygon;
+
+  		env::set_var("BORDERS_PATH", &polygons_path);
+        env::set_var("COASTS", &coasts_path);
+        env::set_var("BORDER", &border_path);
+        env::set_var("TARGET", &var.files);
 
         let mut pbf_file = polygon.replace("polygons/", "");
         pbf_file = pbf_file.replace("poly", "pbf");
+        pbf_file = var.generator.to_owned() + &pbf_file;
         
         let arguments = [pbf_file, String::from("asd")];
         
-        let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh")	        
+        let mvm_proc = Command::new("omim/tools/unix/generate_mwm.sh").current_dir(var.dir)	        
 	        .args(&arguments).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
 		println!("status: {}", mvm_proc.status);
@@ -163,14 +170,28 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 
 	fn read_env(&self) -> Target {		
 		let files_var: &str = "FILES_DIR";		
+		let dir_var: &str = "DIR";
+		let generator_var: &str = "GENERATOR";
 
 		let files = match env::var(files_var) {
 			Err(_) => panic!("error read env FILES_DIR"),
 		    Ok(val) => val,		    
 		};
 
+		let dir = match env::var(dir_var) {
+			Err(_) => panic!("error read env DIR"),
+		    Ok(val) => val,		    
+		};
+
+		let generator = match env::var(generator_var) {
+			Err(_) => panic!("error read env GENERATOR"),
+		    Ok(val) => val,		    
+		};
+
 		Target {			
-			files: files,			
+			files: files,	
+			dir: dir,	
+			generator: generator,
 		}
 	}	
 }

@@ -4,6 +4,7 @@ MAINTAINER Andrey Ivanov
 ENV RUST_VERSION=1.8.0
 ENV REPOSITORY_OMIM=https://github.com/65apps/omim.git
 ENV REPOSITORY_GENERATOR=https://github.com/65apps/rust-pbf-to-mvm.git
+ENV GENERATOR=rust-pbf-to-mvm/
 ENV DIR=/srv
 ENV FILES_DIR=/mnt/files/
 
@@ -39,6 +40,12 @@ RUN ln -s /usr/lib/llvm-3.6/bin/clang /usr/bin/clang && \
 RUN mkdir $FILES_DIR
 
 WORKDIR $DIR
+
+RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
+    cd omim && \
+    echo | ./configure.sh
+
+RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
 
 RUN wget https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 
@@ -90,7 +97,7 @@ RUN \
     rm -rf /var/lib/apt/lists/*
 
 RUN git clone $REPOSITORY_GENERATOR && \
-    cd rust-pbf-to-mvm && \
+    cd $GENERATOR && \
     cargo build && \
     wget https://github.com/github/git-lfs/releases/download/v1.2.0/git-lfs-linux-amd64-1.2.0.tar.gz && \
     tar -xzf git-lfs-linux-amd64-1.2.0.tar.gz && \
@@ -101,12 +108,6 @@ RUN git clone $REPOSITORY_GENERATOR && \
     git lfs pull && \
     rm -rf git-lfs-1.2.0 git-lfs-linux-amd64-1.2.0.tar.gz
 
-WORKDIR $DIR/rust-pbf-to-mvm
-
-RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
-    cd omim && \
-    echo | ./configure.sh
-
-RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+WORKDIR $DIR/$GENERATOR
 
 CMD ["/bin/bash"]
