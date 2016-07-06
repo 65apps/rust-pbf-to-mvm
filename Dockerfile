@@ -41,20 +41,6 @@ RUN mkdir $FILES_DIR
 
 WORKDIR $DIR
 
-RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
-    cd omim && \
-    echo | ./configure.sh
-
-RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
-
-RUN wget https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
-
-RUN tar -xzf rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
-    rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh --without=rust-docs && \
-    rm -rf \
-        rust-$RUST_VERSION-x86_64-unknown-linux-gnu \
-        rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
-
 RUN wget http://www.cmake.org/files/v3.5/cmake-3.5.2.tar.gz && \
     tar xf cmake-3.5.2.tar.gz && \
     cd cmake-3.5.2 && \
@@ -76,6 +62,20 @@ RUN rm -r /usr/include/c++/v1/ && \
     mv llvm/build/include/__cxxabi_config.h /usr/include/ && \
     mv llvm/build/include/cxxabi.h /usr/include/ && \
     mv llvm/build/include/c++/v1 /usr/include/c++/
+
+RUN git clone --depth=1 --recursive $REPOSITORY_OMIM && \
+    cd omim && \
+    echo | ./configure.sh
+
+RUN CONFIG=gtool omim/tools/unix/build_omim.sh -cro
+
+RUN wget https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
+
+RUN tar -xzf rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz && \
+    rust-$RUST_VERSION-x86_64-unknown-linux-gnu/install.sh --without=rust-docs && \
+    rm -rf \
+        rust-$RUST_VERSION-x86_64-unknown-linux-gnu \
+        rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 
 RUN \
     echo "===> add webupd8 repository..."  && \
