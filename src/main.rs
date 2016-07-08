@@ -106,7 +106,7 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 			println!("stderr: {}", String::from_utf8_lossy(&split_proc.stderr));	  
 
 			self.convert_mvm(polygon_dir_str);
-			self.zip_file(polygon_dir_str);
+			self.zip_file(polygon_dir_str);			
 		}		
 	 	Ok(())				
 	}
@@ -120,8 +120,7 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 
   		env::set_var("BORDERS_PATH", &polygons_path);
         env::set_var("COASTS", &coasts_path);
-        env::set_var("BORDER", &border_path);
-        env::set_var("TARGET", &var.files);
+        env::set_var("BORDER", &border_path);        
 
         let mut pbf_file = polygon.replace("polygons/", "");
         pbf_file = pbf_file.replace("poly", "pbf");
@@ -142,7 +141,7 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
 		zip_name = zip_name.replace("poly", "zip");
 		let mwm_file = zip_name.replace("zip", "mwm");		
 		
-		let file = File::create(zip_name).unwrap();
+		let file = File::create(zip_name.clone()).unwrap();
 
 		let mut zip = zip::ZipWriter::new(file);
 		try!(zip.start_file(mwm_file.clone(), zip::CompressionMethod::Deflated));	
@@ -164,7 +163,17 @@ impl<'a, 'b> Genetare<'a, 'b> for Russia<'a> {
     		condition = length;
 		}
 	    
-		try!(zip.finish());		
+		try!(zip.finish());	
+
+		let var = self.read_env();	
+		let arguments = [zip_name, var.files];		
+		let mv_proc = Command::new("mv")	        
+	        .args(&arguments).output().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+
+        println!("status: {}", mv_proc.status);
+		println!("stdout: {}", String::from_utf8_lossy(&mv_proc.stdout));
+		println!("stderr: {}", String::from_utf8_lossy(&mv_proc.stderr));
+        
 		Ok(())
 	}
 
